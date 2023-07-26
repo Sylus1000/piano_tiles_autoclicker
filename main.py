@@ -19,14 +19,14 @@ def initializeGame():
                  int(MONITOR.height * 0.138888888),
                  int(MONITOR.width * 0.4765625),
                  int(MONITOR.height * 0.521527777))
-    open("https://www.jetztspielen.de/spiel/magische-klaviertasten")
+    open("https://www.agame.com/game/magic-piano-tiles")
     sleep(5)
     click(x=MOUSE_CENTER_COORDS[0], y=MOUSE_CENTER_COORDS[1])
     sleep(1)
     click(x=MOUSE_CENTER_COORDS[0], y=MOUSE_CENTER_COORDS[1])
     sleep(3)
 
-def gameLoop(fps: int = 60):
+def gameLoop(fps: int = 30):
     while True:
         start_time = time_ns()
         if is_pressed("q") or is_pressed("esc"):
