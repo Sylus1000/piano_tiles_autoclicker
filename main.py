@@ -1,11 +1,11 @@
 from numpy import array
 from webbrowser import open
 from PIL import ImageGrab
-from time import time_ns, sleep
-from pyautogui import click, moveTo
+from time import time, sleep
+from pyautogui import click
 from keyboard import is_pressed
 from screeninfo import get_monitors
-from cv2 import cvtColor, threshold, findContours, arcLength, approxPolyDP, contourArea, boundingRect, COLOR_BGR2GRAY, THRESH_BINARY_INV, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE
+from cv2 import imwrite, circle, cvtColor, threshold, findContours, arcLength, approxPolyDP, contourArea, boundingRect, COLOR_BGR2GRAY, THRESH_BINARY_INV, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE
 
 MOUSE_CENTER_COORDS = None
 GAME_BBOX = None
@@ -26,25 +26,26 @@ def initializeGame():
     click(x=MOUSE_CENTER_COORDS[0], y=MOUSE_CENTER_COORDS[1])
     sleep(3)
 
-def gameLoop(fps: int = 30):
+def gameLoop(fps: int = 10):
+    frame_time_s = 1.0 / fps
     while True:
-        start_time = time_ns()
+        start_time = time()
         if is_pressed("q") or is_pressed("esc"):
             break
         #logic
         ################################################################
         current_frame = ImageGrab.grab(bbox=GAME_BBOX)
         rectangles = findBlackRectangles(current_frame)
-        if len(rectangles) > 0:
-            for rect in rectangles:
-                x,y = rect["x"], rect["y"]
-                click(x + GAME_BBOX[0], y + GAME_BBOX[1])
+        for rect in rectangles:
+            x,y = rect["x"], rect["y"]
+            click(x=x + GAME_BBOX[0],
+                  y=y + GAME_BBOX[1],
+                  clicks=2)
         ################################################################
-        elapsed_time_s = (time_ns() - start_time) / 1e+9
-        frame_time_s = 1.0 / fps
-        remaining_time_s = frame_time_s - elapsed_time_s + 1e-16
-        print(f"Frametime: {frame_time_s}, Elapsed: {elapsed_time_s}, Remaining: {remaining_time_s}, FPS: {(1 // elapsed_time_s)}")
-        sleep(max(0, remaining_time_s))
+        elapsed_time = time() - start_time
+        remaining_time = frame_time_s - elapsed_time + 1e-16
+        print(f"Frametime: {frame_time_s}, Elapsed: {elapsed_time}, Remaining: {remaining_time}")
+        sleep(max(0, remaining_time))
 
 def findBlackRectangles(screenshot):
     # Convert the screenshot to a NumPy array
@@ -72,6 +73,12 @@ def findBlackRectangles(screenshot):
             center_x = x + w // 2
             center_y = y + h // 2
             black_rectangles.append({"x": center_x, "y": center_y})
+
+    # if len(black_rectangles) > 0:
+    #     for rect in black_rectangles:
+    #         binary_image = circle(binary_image, (rect["x"], rect["y"]), radius=5, color=0, thickness=-1)
+    #     imwrite("test.png",binary_image)
+    #     raise SystemExit("GAME STOPPED")
 
     return black_rectangles
 
