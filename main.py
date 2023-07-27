@@ -2,7 +2,7 @@ from numpy import array
 from webbrowser import open
 from PIL import ImageGrab
 from time import time, sleep
-from pyautogui import click
+from pyautogui import click, moveTo
 from keyboard import is_pressed
 from screeninfo import get_monitors
 from cv2 import imwrite, circle, cvtColor, threshold, findContours, arcLength, approxPolyDP, contourArea, boundingRect, COLOR_BGR2GRAY, THRESH_BINARY_INV, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE
@@ -10,6 +10,8 @@ from cv2 import imwrite, circle, cvtColor, threshold, findContours, arcLength, a
 MOUSE_CENTER_COORDS = None
 GAME_BBOX = None
 MONITOR = None
+AUTOCLICK = True
+YOFFSET = 42
 
 def initializeGame():
     global MONITOR, MOUSE_CENTER_COORDS, GAME_BBOX
@@ -22,11 +24,11 @@ def initializeGame():
     open("https://www.agame.com/game/magic-piano-tiles")
     sleep(5)
     click(x=MOUSE_CENTER_COORDS[0], y=MOUSE_CENTER_COORDS[1])
-    sleep(1)
+    sleep(3)
     click(x=MOUSE_CENTER_COORDS[0], y=MOUSE_CENTER_COORDS[1])
     sleep(3)
 
-def gameLoop(fps: int = 10):
+def gameLoop(fps: int = 15):
     frame_time_s = 1.0 / fps
     while True:
         start_time = time()
@@ -38,9 +40,13 @@ def gameLoop(fps: int = 10):
         rectangles = findBlackRectangles(current_frame)
         for rect in rectangles:
             x,y = rect["x"], rect["y"]
-            click(x=x + GAME_BBOX[0],
-                  y=y + GAME_BBOX[1],
-                  clicks=2)
+            if AUTOCLICK:
+                click(x=x + GAME_BBOX[0],
+                      y=y + GAME_BBOX[1] + YOFFSET,
+                      clicks=2)
+            else:
+                moveTo(x=x + GAME_BBOX[0],
+                       y=y + GAME_BBOX[1] + YOFFSET)
         ################################################################
         elapsed_time = time() - start_time
         remaining_time = frame_time_s - elapsed_time + 1e-16
